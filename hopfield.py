@@ -66,7 +66,7 @@ class HopfieldNetwork(object):
                 post = np.outer(net, x)
 
                 self.weights -= np.add(pre, post) / self.n_units
-            np.fill_diagonal(self.weights, 0
+            np.fill_diagonal(self.weights, 0)
 
     # Inference Step Options
     # ----------------------
@@ -76,7 +76,7 @@ class HopfieldNetwork(object):
         The activation function is tanh(a*x + b)
         Set gradient to 1 for normal tanh
         """
-        # set up empty history
+        ## set up empty history
         Xs = np.zeros((N, len(X)))
 
         for i in range(N):
