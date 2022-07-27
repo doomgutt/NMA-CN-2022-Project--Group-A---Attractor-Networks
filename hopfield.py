@@ -55,7 +55,7 @@ class HopfieldNetwork(object):
             self.training_list = training_list
             self.weights = np.zeros([n_units, n_units])
 
-            # image vector is x
+            ## image vector is x
             # self.X  is training_list
 
             for x in training_list:
