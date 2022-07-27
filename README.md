@@ -9,6 +9,7 @@ new functions:
 
 problems:
 - validate doesn't work as it should
+- letter_res doesn't properly resize letters (although probably doesn't rly matter)
 
 bug fixes:
 - update functions had X.dot(weights) instead of weights.dot(X)

@@ -63,30 +63,17 @@ class HopfieldNetwork(object):
     # ---------------------
 
     def process_energy(self, energy_fn):
+        """ energy of the whole process """
         self.pe_dict = energy_functions.process_energy_dictionary
-        pass
+        return self.pe_dict[energy_fn](self.inference_history)
 
     def sequence_energy(self, energy_fn):
+        """ energy sequence for every consecutive state """
         self.se_dict = energy_functions.state_energy_dictionary
-        pass
-
-    # Energy
-    def process_energy_sync(self):
-        """ This assumes that deviating from baseline (0) uses more energy """
-        return np.sum(self.inference_history)
-
-    def process_energy_sync_abs(self):
-        """ This assumes that deviating from baseline (0) uses more energy """
-        return np.sum(np.abs(self.inference_history))
-
-    def energy_async(self):
-        """ Energy is calculated as the sum of all states """
-        return np.sum([self.inference_history >= 0])
-
-    def energy_async_abs(self):
-        """sum of values >= 0 over the inference history"""
-        return np.sum([self.inference_history >= 0])
-    
+        energy_history = np.zeros(len(self.inference_history))
+        for i, X in enumerate(self.inference_history):
+            energy_history[i] = self.pe_dict[energy_fn](X)
+        return energy_history
 
     # Time
     def time(self):
