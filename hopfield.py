@@ -66,7 +66,7 @@ class HopfieldNetwork(object):
                 post = np.outer(net, x)
 
                 self.weights -= np.add(pre, post) / self.n_units
-            np.fill_diagonal(self.weights, 0
+            np.fill_diagonal(self.weights, 0)
 
     # Inference Step Options
     # ----------------------
