@@ -47,10 +47,9 @@ class HopfieldNetwork(object):
             self.weights -= np.add(pre, post) / self.num_neurons
         np.fill_diagonal(self.weights, 0)
 
-
     # Inference Step Options
     # ----------------------
-    def IS_sync_tanh_threshold(self, X, N, gradient=1000, threshold=1):
+    def IS_sync_tanh(self, X, N, gradient=1000, threshold=1):
         """
         Run the inference step N times starting with the input X0
         The activation function is tanh(a*x + b)
@@ -62,6 +61,37 @@ class HopfieldNetwork(object):
         for i in range(N):
             # weighted sums
             ws = np.dot(X, self.weights)
+
+            # activation function
+            X = np.tanh(gradient * (ws - threshold))
+
+            # check if there's change from previous entry
+            if i > 0:
+                if self._calculate_error(Xs[i-1], X) == 0:
+                    Xs = Xs[:i]
+                    # print(f"quit after {i} steps: steady state reached")
+                    break
+
+            # add entry to state history
+            Xs[i] = X.copy()
+
+        self.inference_history = Xs
+        return Xs
+
+    def IS_async_tanh(self, X, N, gradient=1000, threshold=1):
+        """ async tanh """
+        # set up empty history
+        Xs = np.zeros((N, len(X)))
+
+        for i in range(N):
+            # choose node
+            choice = np.random.randint(len(X))
+
+            # weight for chosen node
+            choice_w_in = np.sum(X[choice] * self.weights)
+
+            # update chosen node
+            X[choice] = np.tanh(choice_w_in)
 
             # activation function
             X = np.tanh(gradient * (ws - threshold))
