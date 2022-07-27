@@ -134,10 +134,26 @@ class HopfieldNetwork(object):
     ## Evaluation functions
     # ---------------------
 
-    def energy(self):
+
+    # Energy
+    def process_energy_sync(self):
+        """ This assumes that deviating from baseline (0) uses more energy """
+        return np.sum(self.inference_history)
+
+    def process_energy_sync_abs(self):
+        """ This assumes that deviating from baseline (0) uses more energy """
+        return np.sum(np.abs(self.inference_history))
+
+    def energy_async(self):
+        """ Energy is calculated as the sum of all states """
+        return np.sum([self.inference_history >= 0])
+
+    def energy_async_abs(self):
         """sum of values >= 0 over the inference history"""
         return np.sum([self.inference_history >= 0])
     
+
+    # Time
     def time(self):
         return len(self.inference_history)
 
