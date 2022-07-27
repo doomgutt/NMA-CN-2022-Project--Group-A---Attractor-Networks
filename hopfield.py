@@ -29,23 +29,44 @@ class HopfieldNetwork(object):
             self.weights += np.outer(x, x) / m
         self.weights[np.diag_indices(n_units)] = 0
     
-    def TS_storkey(self, training_alphabet):
-        # TODO: check if this works?
-        m, num_neurons = np.shape(training_alphabet)
-        self.m = m
-        self.num_neurons = num_neurons
-        self.training_alphabet = training_alphabet
-        self.weights = np.zeros([self.num_neurons, self.num_neurons])
+    # def TS_storkey(self, training_alphabet):
+    #     # TODO: check if this works?
+    #     m, num_neurons = np.shape(training_alphabet)
+    #     self.m = m
+    #     self.num_neurons = num_neurons
+    #     self.training_alphabet = training_alphabet
+    #     self.weights = np.zeros([self.num_neurons, self.num_neurons])
+    #
+    #     for image_vector in self.training_alphabet:
+    #         self.weights += np.outer(image_vector, image_vector) / self.num_neurons
+    #         net = np.dot(self.weights, image_vector)
+    #
+    #         pre = np.outer(image_vector, net)
+    #         post = np.outer(net, image_vector)
+    #
+    #         self.weights -= np.add(pre, post) / self.num_neurons
+    #     np.fill_diagonal(self.weights, 0)
 
-        for image_vector in self.training_alphabet:
-            self.weights += np.outer(image_vector, image_vector) / self.num_neurons
-            net = np.dot(self.weights, image_vector)
+        def TS_storkey(self, training_list):
+            # TODO: check if this works?
+            m, n_units = np.shape(training_list)
+            self.m = m
+            self.n_units = n_units
+            self.training_list = training_list
+            self.weights = np.zeros([n_units, n_units])
 
-            pre = np.outer(image_vector, net)
-            post = np.outer(net, image_vector)
+            ## image vector is x
+            # self.X  is training_list
 
-            self.weights -= np.add(pre, post) / self.num_neurons
-        np.fill_diagonal(self.weights, 0)
+            for x in training_list:
+                self.weights += np.outer(x, x) / self.n_units
+                net = np.dot(self.weights, x)
+
+                pre = np.outer(x, net)
+                post = np.outer(net, x)
+
+                self.weights -= np.add(pre, post) / self.n_units
+            np.fill_diagonal(self.weights, 0
 
     # Inference Step Options
     # ----------------------
