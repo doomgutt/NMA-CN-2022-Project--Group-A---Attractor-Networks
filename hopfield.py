@@ -50,8 +50,7 @@ class HopfieldNetwork(object):
 
     # Inference Step Options
     # ----------------------
-
-    def IS_tanh_threshold(self, X, N, gradient=1000, threshold=1):
+    def IS_sync_tanh_threshold(self, X, N, gradient=1000, threshold=1):
         """
         Run the inference step N times starting with the input X0
         The activation function is tanh(a*x + b)
