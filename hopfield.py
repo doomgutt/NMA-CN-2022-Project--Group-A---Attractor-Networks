@@ -76,7 +76,7 @@ class HopfieldNetwork(object):
         The activation function is tanh(a*x + b)
         Set gradient to 1 for normal tanh
         """
-        # set up empty history
+        ## set up empty history
         Xs = np.zeros((N, len(X)))
 
         for i in range(N):
