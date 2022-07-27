@@ -1,47 +1,5 @@
 import numpy as np
 
-def hebbian(self, training_alphabet):
-    """
-    Apply the hebbian training algorhithm 
-    with training_alphabet as the input
-    """
-    m, n_units = np.shape(training_alphabet)
-    self.m = m
-    self.n_units = n_units
-    self.training_alphabet = training_alphabet
-    self.weights = np.zeros((n_units, n_units))
-
-    # Memory lossiness warning
-    if n_units*0.14 < m:
-        print("The number of memory patterns to be stored is > 14%% " +
-            "of the model size. This may lead to problems." +
-            "ref: https://doi.org/10.3389/fncom.2016.00144")
-
-    # Hebbian rule
-    for x in training_alphabet:
-        self.weights += np.outer(x, x) / m
-    self.weights[np.diag_indices(n_units)] = 0
-
-def storkey(self, training_alphabet):
-    # TODO: check if this works?
-    m, num_neurons = np.shape(training_alphabet)
-    self.m = m
-    self.num_neurons = num_neurons
-    self.training_alphabet = training_alphabet
-    self.weights = np.zeros([self.num_neurons, self.num_neurons])
-
-    for image_vector in self.training_alphabet:
-        self.weights += np.outer(image_vector, image_vector) / self.num_neurons
-        net = np.dot(self.weights, image_vector)
-
-        pre = np.outer(image_vector, net)
-        post = np.outer(net, image_vector)
-
-        self.weights -= np.add(pre, post) / self.num_neurons
-    np.fill_diagonal(self.weights, 0)
-
-
-
 
 #storkey learning rule
 
