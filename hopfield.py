@@ -1,157 +1,79 @@
 import numpy as np
+import activation_functions
+import learning_rules
+import utilities as uti
+import energy_functions
 
 class HopfieldNetwork(object):
     def __init__(self, **kwargs):
-      pass
+        pass
 
-    ## Training Step Options
-    # ----------------------
+    def run(self, dataset, lr, af, iterations, n_test_samples=9, noise_level=.0):
+        self.training_step(dataset, lr)
 
-    def TS_hebbian(self, training_alphabet):
-        """
-        Apply the hebbian training algorhithm 
-        with training_alphabet as the input
-        """
-        m, n_units = np.shape(training_alphabet)
-        self.m = m
-        self.n_units = n_units
-        self.training_alphabet = training_alphabet
-        self.weights = np.zeros((n_units, n_units))
+        n_images = len(dataset)
+        for i in range(n_test_samples):
+            # add noise
+            # idx = np.random.randint(0, n_images)
+            idx = i % n_images
 
-        # Memory lossiness warning
-        if n_units*0.14 < m:
-            print("The number of memory patterns to be stored is > 14%% " +
-                "of the model size. This may lead to problems." +
-                "ref: https://doi.org/10.3389/fncom.2016.00144")
+            x_test = dataset[idx].copy()
+            x_test = uti.add_noise(x_test, noise_level=noise_level)
 
-        # Hebbian rule
-        for x in training_alphabet:
-            self.weights += np.outer(x, x) / m
-        self.weights[np.diag_indices(n_units)] = 0
-    
-    # def TS_storkey(self, training_alphabet):
-    #     # TODO: check if this works?
-    #     m, num_neurons = np.shape(training_alphabet)
-    #     self.m = m
-    #     self.num_neurons = num_neurons
-    #     self.training_alphabet = training_alphabet
-    #     self.weights = np.zeros([self.num_neurons, self.num_neurons])
-    #
-    #     for image_vector in self.training_alphabet:
-    #         self.weights += np.outer(image_vector, image_vector) / self.num_neurons
-    #         net = np.dot(self.weights, image_vector)
-    #
-    #         pre = np.outer(image_vector, net)
-    #         post = np.outer(net, image_vector)
-    #
-    #         self.weights -= np.add(pre, post) / self.num_neurons
-    #     np.fill_diagonal(self.weights, 0)
+            Xs = self.inference_step(x_test, iterations, af)
 
-        def TS_storkey(self, training_list):
-            # TODO: check if this works?
-            m, n_units = np.shape(training_list)
-            self.m = m
-            self.n_units = n_units
-            self.training_list = training_list
-            self.weights = np.zeros([n_units, n_units])
+            is_correct, error = self._validate(x_test, idx)
+            print(idx, is_correct, error)
+            print(len(Xs))
 
-            ## image vector is x
-            # self.X  is training_list
+            ax = uti.plt.subplot(2, n_test_samples, i+1)
+            uti.show_letter(x_test, ax)
+            ax = uti.plt.subplot(2, n_test_samples, n_test_samples + i+1)
+            uti.show_letter(Xs[-1], ax)
+            # print(x_test.dtype, Xs[-1].dtype)
 
-            for x in training_list:
-                self.weights += np.outer(x, x) / self.n_units
-                net = np.dot(self.weights, x)
+    ## Training Step
+    # --------------
+    def training_step(self, training_set, learning_rule="hebbian"):
+        self.lr_dict = learning_rules.dictionary
+        self.training_set = training_set
+        self.size = training_set.shape[1]
+        self.weights = self.lr_dict[learning_rule](training_set)
 
-                pre = np.outer(x, net)
-                post = np.outer(net, x)
-
-                self.weights -= np.add(pre, post) / self.n_units
-            np.fill_diagonal(self.weights, 0)
-
-    # Inference Step Options
-    # ----------------------
-    def IS_sync_tanh(self, X, N, gradient=1000, threshold=1):
-        """
-        Run the inference step N times starting with the input X0
-        The activation function is tanh(a*x + b)
-        Set gradient to 1 for normal tanh
-        """
-        ## set up empty history
-        Xs = np.zeros((N, len(X)))
-
-        for i in range(N):
-            # weighted sums
-            ws = np.dot(X, self.weights)
-
-            # activation function
-            X = np.tanh(gradient * (ws - threshold))
-
-            # check if there's change from previous entry
-            if i > 0:
-                if self._calculate_error(Xs[i-1], X) == 0:
+    # Inference Step
+    # --------------
+    def inference_step(self, X, iterations, af="sync_tanh", step_check=10):
+        self.af_dict = activation_functions.dictionary
+        X = X.astype("float")
+        # print(self.af_dict)
+        Xs = np.zeros((iterations, len(X)))
+        for i in range(iterations):
+            X = self.af_dict[af](X, self.weights)
+            if i >= step_check:
+                if self._calculate_error(Xs[i-step_check], X) == 0:
                     Xs = Xs[:i]
                     # print(f"quit after {i} steps: steady state reached")
                     break
-
-            # add entry to state history
             Xs[i] = X.copy()
-
         self.inference_history = Xs
         return Xs
-
-    def IS_async_tanh(self, X, N, gradient=1000, threshold=1):
-        """ async tanh """
-        # set up empty history
-        Xs = np.zeros((N, len(X)))
-
-        for i in range(N):
-            # choose node
-            choice = np.random.randint(len(X))
-
-            # weight for chosen node
-            choice_w_in = np.sum(X[choice] * self.weights)
-
-            # update chosen node
-            X[choice] = np.tanh(choice_w_in)
-
-            # activation function
-            X = np.tanh(gradient * (ws - threshold))
-
-            # check if there's change from previous entry
-            if i > 0:
-                if self._calculate_error(Xs[i-1], X) == 0:
-                    Xs = Xs[:i]
-                    # print(f"quit after {i} steps: steady state reached")
-                    break
-
-            # add entry to state history
-            Xs[i] = X.copy()
-
-        self.inference_history = Xs
-        return Xs
-    
+     
 
     ## Evaluation functions
     # ---------------------
 
+    def process_energy(self, energy_fn):
+        """ energy of the whole process """
+        self.pe_dict = energy_functions.process_energy_dictionary
+        return self.pe_dict[energy_fn](self.inference_history)
 
-    # Energy
-    def process_energy_sync(self):
-        """ This assumes that deviating from baseline (0) uses more energy """
-        return np.sum(self.inference_history)
-
-    def process_energy_sync_abs(self):
-        """ This assumes that deviating from baseline (0) uses more energy """
-        return np.sum(np.abs(self.inference_history))
-
-    def energy_async(self):
-        """ Energy is calculated as the sum of all states """
-        return np.sum([self.inference_history >= 0])
-
-    def energy_async_abs(self):
-        """sum of values >= 0 over the inference history"""
-        return np.sum([self.inference_history >= 0])
-    
+    def sequence_energy(self, energy_fn):
+        """ energy sequence for every consecutive state """
+        self.se_dict = energy_functions.state_energy_dictionary
+        energy_history = np.zeros(len(self.inference_history))
+        for i, X in enumerate(self.inference_history):
+            energy_history[i] = self.pe_dict[energy_fn](X)
+        return energy_history
 
     # Time
     def time(self):
@@ -176,15 +98,15 @@ class HopfieldNetwork(object):
         # find the most similar picture in the dataset
         min_error = 1e10
         min_error_idx = -1
-        for y_idx in range(self.m):
-            # print(X_predict, self.training_alphabet[y_idx])
-            this_error = self._calculate_error(X_predict, self.training_alphabet[y_idx])
+        for y_idx in range(self.size):
+            # print(X_predict, self.training_set[y_idx])
+            this_error = self._calculate_error(X_predict, self.training_set[y_idx])
             # print(f"idx={y_idx}, error={this_error}")
             if this_error < min_error:
                 min_error = this_error
                 min_error_idx = y_idx
         # print(min_error, min_error_idx)
-        return (min_error_idx == y_hat), self._calculate_error(X_predict, self.training_alphabet[y_hat])
+        return (min_error_idx == y_hat), self._calculate_error(X_predict, self.training_set[y_hat])
 
     @staticmethod
     def _calculate_error(x1, x2):
