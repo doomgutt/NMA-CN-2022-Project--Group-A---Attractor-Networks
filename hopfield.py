@@ -11,7 +11,7 @@ class HopfieldNetwork(object):
     def __init__(self, **kwargs):
         pass
 
-    def run(self, training_set, iterations, 
+    def run(self, training_set, iterations, params=(1,0),
             lr='hebbian', af='sync_tanh',
             pe_fn = "pe_lin", se_fn = 'se_lin',
             n_test_samples=9, noise_level=.0,
@@ -34,7 +34,7 @@ class HopfieldNetwork(object):
             x_test = training_set[idx].copy()
             x_test = uti.add_noise(x_test, noise_level=noise_level)
 
-            inf_hist = self.inference_step(x_test, iterations, af, stop_error=stop_error)
+            inf_hist = self.inference_step(x_test, iterations, af=af, params=params, stop_error=stop_error)
 
             is_correct, error = self._validate(inf_hist[-1], idx)
             pm.add(is_correct, error, self.time(), 
@@ -69,14 +69,14 @@ class HopfieldNetwork(object):
 
     # Inference Step
     # --------------
-    def inference_step(self, X, iterations, af="sync_tanh",
+    def inference_step(self, X, iterations, params=(1, 0), af="sync_tanh",
                        stop_step=10, stop_error=1e-5):
         self.af_dict = activation_functions.dictionary
         X = X.astype("float")
         # print(self.af_dict)
         Xs = np.zeros((iterations, len(X)))
         for i in range(iterations):
-            X = self.af_dict[af](X, self.weights)
+            X = self.af_dict[af](X, self.weights, *params)
             if i >= stop_step:
                 if self._calculate_error(Xs[i-stop_step], X) < stop_error:
                     Xs = Xs[:i]

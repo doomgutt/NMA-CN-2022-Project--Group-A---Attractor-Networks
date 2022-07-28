@@ -2,15 +2,22 @@ Latest updates:
 
 
 ### Thursday Log (Dem)
+@Benjie
+- in v3, I can't make the graph look good. I duno, you try. Maybe do a mean calculation or smthn...
+- in v4, it might be good to make a heatmap or a 3d graph? again, no damn clue how.... I have the data working there sort of though...
+- implement performance threshold?? I'm not sure how...
+- From Callum, if you have time: https://pyquestions.com/how-to-extract-data-from-matplotlib-plot. He can analyse the data in excel then...
+
 function edits
 - show_letter (square roots the length and trims the rest. Also displays values clearly)
+- changed noise to continuous
+- added potential tanh normalisation (VERY BROKEN, DONT TOUCH)
 
 bug:
 - we only get data from last image
 - [fixed, I think] self.size was wrong
 
 realisations:
-- I think out noise is kinda shit?
 - Calum's idea of over-training with noise improved attractors ALOT
 - network size affects stuff....
     - tanh is "harsher" because higher inputs are possible due to bigger weight input!

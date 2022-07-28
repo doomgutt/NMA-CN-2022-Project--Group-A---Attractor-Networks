@@ -11,7 +11,7 @@ def async_tanh(X, weights, gradient=1, threshold=0, size_norm=None):
     X[i] = tanh_in(ws_i, gradient, threshold, size_norm)
     return X
 
-def async_n_tanh(X, weights, n_choices=None, gradient=1, threshold=0, size_norm=None):
+def async_n_tanh(X, weights, gradient=1, threshold=0, n_choices=None, size_norm=None):
     if n_choices == None:
         n_choices = len(X)//2
     elif n_choices >= len(X):
