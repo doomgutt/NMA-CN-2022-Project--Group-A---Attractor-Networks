@@ -10,6 +10,7 @@ def show_letter(pattern, ax = None):
     side_len = int( pattern.size ** 0.5 + 0.5)
     ax.imshow(pattern.reshape(side_len, side_len), cmap='bone_r')
     ax.set_axis_off()
+    # how do we talk about
 
 def add_noise(x_, noise_level=.2):
     noise = np.random.choice(
