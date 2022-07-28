@@ -11,15 +11,16 @@ class HopfieldNetwork(object):
     def run(self, dataset, iterations, 
             lr='hebbian', af='sync_tanh',
             pe_fn = "pe_lin", se_fn = 'se_lin',
-            n_test_samples=9, noise_level=.0):
+            n_test_samples=100, noise_level=.0,
+            need_plot = False):
         self.training_step(dataset, lr)
 
         n_images = len(dataset)
         pm = PerformanceMetric()
         for i in range(n_test_samples):
             # add noise
-            # idx = np.random.randint(0, n_images)
-            idx = i % n_images
+            idx = np.random.randint(0, n_images)
+            # idx = i % n_images
 
             x_test = dataset[idx].copy()
             x_test = uti.add_noise(x_test, noise_level=noise_level)
@@ -33,10 +34,11 @@ class HopfieldNetwork(object):
             # print(len(Xs))
             # print(Xs)
             # print(Xs[-1])
-            ax = uti.plt.subplot(2, n_test_samples, i+1)
-            uti.show_letter(x_test, ax)
-            ax = uti.plt.subplot(2, n_test_samples, n_test_samples + i+1)
-            uti.show_letter(Xs[-1], ax)
+            if need_plot:
+                ax = uti.plt.subplot(2, n_test_samples, i+1)
+                uti.show_letter(x_test, ax)
+                ax = uti.plt.subplot(2, n_test_samples, n_test_samples + i+1)
+                uti.show_letter(Xs[-1], ax)
         return pm
             # print(x_test.dtype, Xs[-1].dtype)
 
@@ -60,7 +62,7 @@ class HopfieldNetwork(object):
             if i >= step_check:
                 if self._calculate_error(Xs[i-step_check], X) < 1e-5:
                     Xs = Xs[:i]
-                    print(f"quit after {i} steps: steady state reached")
+                    # print(f"quit after {i} steps: steady state reached")
                     break
             Xs[i] = X.copy()
         self.inference_history = Xs
