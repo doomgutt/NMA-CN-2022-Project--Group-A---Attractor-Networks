@@ -3,64 +3,84 @@ import activation_functions
 import learning_rules
 import utilities as uti
 import energy_functions
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class HopfieldNetwork(object):
     def __init__(self, **kwargs):
         pass
 
-    def run(self, dataset, iterations, 
+    def run(self, training_set, iterations, params=(1,0),
             lr='hebbian', af='sync_tanh',
             pe_fn = "pe_lin", se_fn = 'se_lin',
-            n_test_samples=9, noise_level=.0):
-        self.training_step(dataset, lr)
+            n_test_samples=9, noise_level=.0,
+            noize_dataset=True, stop_error=1e-5,
+            performance_threshold=0, print_info=True):
 
-        n_images = len(dataset)
+        if noize_dataset:
+            noized_trainig_set = uti.noisify_dataset(training_set)
+            self.training_step(noized_trainig_set, lr)
+            self.training_set = training_set
+        else:
+            self.training_step(training_set, lr)
+
         pm = PerformanceMetric()
+        correctness_list = []
         for i in range(n_test_samples):
-            # add noise
             # idx = np.random.randint(0, n_images)
-            idx = i % n_images
+            idx = i % len(training_set)
 
-            x_test = dataset[idx].copy()
+            x_test = training_set[idx].copy()
             x_test = uti.add_noise(x_test, noise_level=noise_level)
 
-            Xs = self.inference_step(x_test, iterations, af)
+            inf_hist = self.inference_step(x_test, iterations, af=af, params=params, stop_error=stop_error)
 
-            is_correct, error = self._validate(Xs[-1], idx)
+            is_correct, error = self._validate(inf_hist[-1], idx)
             pm.add(is_correct, error, self.time(), 
                 self.process_energy(pe_fn), self.sequence_energy(se_fn))
+            
+            correctness_list.append(is_correct)
+
+            if print_info:
+                ax = uti.plt.subplot(3, n_test_samples, i+1)
+                uti.show_letter(training_set[idx], ax)
+                ax = uti.plt.subplot(3, n_test_samples, n_test_samples + i+1)
+                uti.show_letter(x_test, ax)
+                ax = uti.plt.subplot(3, n_test_samples, 2*n_test_samples + i+1)
+                uti.show_letter(inf_hist[-1], ax)
+
             # print(idx, is_correct, error)
-            # print(len(Xs))
-            # print(Xs)
-            # print(Xs[-1])
-            ax = uti.plt.subplot(2, n_test_samples, i+1)
-            uti.show_letter(x_test, ax)
-            ax = uti.plt.subplot(2, n_test_samples, n_test_samples + i+1)
-            uti.show_letter(Xs[-1], ax)
+            # print(len(inf_hist))
+            # print(inf_hist)
+            # print(inf_hist[-1])
+            # print(x_test.dtype, inf_hist[-1].dtype)
+        if print_info: print(correctness_list)
         return pm
-            # print(x_test.dtype, Xs[-1].dtype)
+
 
     ## Training Step
     # --------------
     def training_step(self, training_set, learning_rule="hebbian"):
         self.lr_dict = learning_rules.dictionary
         self.training_set = training_set
-        self.size = training_set.shape[0]
+        self.size = training_set.shape[1]
         self.weights = self.lr_dict[learning_rule](training_set)
 
     # Inference Step
     # --------------
-    def inference_step(self, X, iterations, af="sync_tanh", step_check=10):
+    def inference_step(self, X, iterations, params=(1, 0), af="sync_tanh",
+                       stop_step=10, stop_error=1e-5):
         self.af_dict = activation_functions.dictionary
         X = X.astype("float")
         # print(self.af_dict)
         Xs = np.zeros((iterations, len(X)))
         for i in range(iterations):
-            X = self.af_dict[af](X, self.weights)
-            if i >= step_check:
-                if self._calculate_error(Xs[i-step_check], X) < 1e-5:
+            X = self.af_dict[af](X, self.weights, *params)
+            if i >= stop_step:
+                if self._calculate_error(Xs[i-stop_step], X) < stop_error:
                     Xs = Xs[:i]
-                    print(f"quit after {i} steps: steady state reached")
+                    logging.info(f"quit after {i} steps: steady state reached")
                     break
             Xs[i] = X.copy()
         self.inference_history = Xs
@@ -115,7 +135,7 @@ class HopfieldNetwork(object):
         # print("X_predict", X_predict)
         min_error = 1e10
         min_error_idx = -1
-        for y_idx in range(self.size):
+        for y_idx in range(self.training_set.shape[0]):
             # print(f"y_idx={y_idx}", self.training_set[y_idx])
             # print(X_predict, self.training_set[y_idx])
             this_error = self._calculate_error(X_predict, self.training_set[y_idx])

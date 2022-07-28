@@ -1,17 +1,17 @@
 import numpy as np
 
 
-def sync_tanh(X, weights, gradient=1, threshold=0):
+def sync_tanh(X, weights, gradient=1, threshold=0, size_norm=None):
     ws = weights.dot(X)
-    return np.tanh(gradient * (ws - threshold))
+    return tanh_in(ws, gradient, threshold, size_norm)
 
-def async_tanh(X, weights, gradient=1, threshold=0):
+def async_tanh(X, weights, gradient=1, threshold=0, size_norm=None):
     i = np.random.randint(len(X))
     ws_i = np.sum(X * weights[i])
-    X[i] = np.tanh(gradient * (ws_i - threshold))
+    X[i] = tanh_in(ws_i, gradient, threshold, size_norm)
     return X
 
-def async_n_tanh(X, weights, n_choices=None, gradient=1, threshold=0):
+def async_n_tanh(X, weights, gradient=1, threshold=0, n_choices=None, size_norm=None):
     if n_choices == None:
         n_choices = len(X)//2
     elif n_choices >= len(X):
@@ -24,8 +24,14 @@ def async_n_tanh(X, weights, n_choices=None, gradient=1, threshold=0):
         idx_weights[n][0] = i
         idx_weights[n][1] = np.sum(X * weights[i])
     for i_w in idx_weights:
-        X[int(i_w[0])] = np.tanh(gradient * (i_w[1] - threshold))
+        X[int(i_w[0])] = tanh_in(i_w[1], gradient, threshold, size_norm)
     return X
+
+def tanh_in(x, gradient, threshold, size_norm=None):
+    c = 1
+    if size_norm:
+        c = 1 / size_norm
+    return np.tanh(c * gradient * (x - threshold))
 
 # ----------------------------------------
 dictionary = {

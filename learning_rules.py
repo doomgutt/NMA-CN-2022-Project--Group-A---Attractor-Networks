@@ -1,4 +1,8 @@
 import numpy as np
+import logging
+
+logging.basicConfig(level=logging.WARNING)
+
 
 def hebbian(training_set):
     """
@@ -10,9 +14,9 @@ def hebbian(training_set):
 
     # Memory lossiness warning
     if hn_size*0.14 < ts_size:
-        print("The number of memory patterns to be stored is > 14%% " +
-            "of the model size. This may lead to problems." +
-            "ref: https://doi.org/10.3389/fncom.2016.00144")
+        logging.info("The number of memory patterns to be" + 
+            "stored is > 14%% of the model size. This may lead " +
+            "to problems. \nref: https://doi.org/10.3389/fncom.2016.00144")
 
     # Hebbian rule
     for x in training_set:
