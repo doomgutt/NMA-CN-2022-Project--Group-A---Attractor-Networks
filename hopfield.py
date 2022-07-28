@@ -63,16 +63,24 @@ class HopfieldNetwork(object):
     # ---------------------
 
     def process_energy(self, energy_fn):
-        """ energy of the whole process """
+        """ energy of the whole process 
+        "pe_lin"  : process_energy_lin,
+        "pe_abs"  : process_energy_abs,
+        "pe_relu" : process_energy_relu,
+        """
         self.pe_dict = energy_functions.process_energy_dictionary
         return self.pe_dict[energy_fn](self.inference_history)
 
     def sequence_energy(self, energy_fn):
-        """ energy sequence for every consecutive state """
+        """ energy sequence for every consecutive state 
+        "se_lin"  : state_energy_bio_lin,
+        "se_abs"  : state_energy_bio_abs,
+        "se_relu" : state_energy_bio_relu,
+        """
         self.se_dict = energy_functions.state_energy_dictionary
         energy_history = np.zeros(len(self.inference_history))
         for i, X in enumerate(self.inference_history):
-            energy_history[i] = self.pe_dict[energy_fn](X)
+            energy_history[i] = self.se_dict[energy_fn](X)
         return energy_history
 
     # Time
