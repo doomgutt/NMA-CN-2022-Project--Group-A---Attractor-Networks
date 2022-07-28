@@ -7,8 +7,9 @@ def show_letter(pattern, ax = None):
     if ax == None:
         f, ax = plt.subplots(1, 1, figsize=(4, 4))
         f.tight_layout()
-    side_len = int( pattern.size ** 0.5 + 0.5)
-    ax.imshow(pattern.reshape(side_len, side_len), cmap='bone_r')
+    side_len = int(pattern.size ** 0.5)
+    trimmed = pattern[:side_len*side_len]
+    ax.imshow(trimmed.reshape(side_len, side_len), cmap='bone', vmin=-1, vmax=1)
     ax.set_axis_off()
     # how do we talk about
 
@@ -17,7 +18,12 @@ def add_noise(x_, noise_level=.2):
         [1, -1], size=len(x_), p=[1-noise_level, noise_level])
     return x_ * noise
 
-
+def noisify_dataset(dataset, iterations=10, noise=.1):
+    noized_dataset = []
+    for img in dataset:
+        for _ in range(iterations):
+            noized_dataset.append(add_noise(img, noise))
+    return np.array(noized_dataset)
 
 
 
