@@ -14,6 +14,12 @@ def show_letter(pattern, ax = None):
     # how do we talk about
 
 def add_noise(x_, noise_level=.2):
+    noise = np.random.uniform(-1, 1, len(x_))
+    noise = noise * np.random.choice([.0, 1.0], size=len(x_), p=[1-noise_level, noise_level])
+    noise[noise==.0] = 1
+    return x_ * noise
+
+def old_add_noise(x_, noise_level=.2):
     noise = np.random.choice(
         [1, -1], size=len(x_), p=[1-noise_level, noise_level])
     return x_ * noise

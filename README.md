@@ -10,6 +10,7 @@ bug:
 - [fixed, I think] self.size was wrong
 
 realisations:
+- I think out noise is kinda shit?
 - Calum's idea of over-training with noise improved attractors ALOT
 - network size affects stuff....
     - tanh is "harsher" because higher inputs are possible due to bigger weight input!

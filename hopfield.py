@@ -16,7 +16,7 @@ class HopfieldNetwork(object):
             pe_fn = "pe_lin", se_fn = 'se_lin',
             n_test_samples=9, noise_level=.0,
             noize_dataset=True, stop_error=1e-5,
-            performance_threshold=0):
+            performance_threshold=0, print_info=True):
 
         if noize_dataset:
             noized_trainig_set = uti.noisify_dataset(training_set)
@@ -42,19 +42,20 @@ class HopfieldNetwork(object):
             
             correctness_list.append(is_correct)
 
-            ax = uti.plt.subplot(3, n_test_samples, i+1)
-            uti.show_letter(training_set[idx], ax)
-            ax = uti.plt.subplot(3, n_test_samples, n_test_samples + i+1)
-            uti.show_letter(x_test, ax)
-            ax = uti.plt.subplot(3, n_test_samples, 2*n_test_samples + i+1)
-            uti.show_letter(inf_hist[-1], ax)
+            if print_info:
+                ax = uti.plt.subplot(3, n_test_samples, i+1)
+                uti.show_letter(training_set[idx], ax)
+                ax = uti.plt.subplot(3, n_test_samples, n_test_samples + i+1)
+                uti.show_letter(x_test, ax)
+                ax = uti.plt.subplot(3, n_test_samples, 2*n_test_samples + i+1)
+                uti.show_letter(inf_hist[-1], ax)
 
             # print(idx, is_correct, error)
             # print(len(inf_hist))
             # print(inf_hist)
             # print(inf_hist[-1])
             # print(x_test.dtype, inf_hist[-1].dtype)
-        print(correctness_list)
+        if print_info: print(correctness_list)
         return pm
 
 
