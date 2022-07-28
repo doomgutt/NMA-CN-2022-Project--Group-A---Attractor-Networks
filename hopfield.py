@@ -145,3 +145,13 @@ class PerformanceMetric(object):
         self.timestamp.append(_timestamp)
         self.process_energy.append(_process_energy)
         self.sequence_energy.append(_sequence_energy)
+
+    def __str__(self):
+        ret_str = "{"
+        ret_str += "is_correct:" + str(self.is_correct) + ","
+        ret_str += "error:" + str(self.error) + ","
+        ret_str += "timestamp:" + str(self.timestamp) + ","
+        ret_str += "process_energy:" + str(self.process_energy) + ","
+        ret_str += "sequence_energy:" + str(self.sequence_energy) + ","
+        ret_str += "}"
+        return ret_str
