@@ -63,11 +63,13 @@ class HopfieldNetwork(object):
     def training_step(self, training_set, learning_rule="hebbian"):
         self.lr_dict = learning_rules.dictionary
         self.training_set = training_set
+        self.size = training_set.shape[1]
         self.weights = self.lr_dict[learning_rule](training_set)
 
     # Inference Step
     # --------------
-    def inference_step(self, X, iterations, af="sync_tanh", stop_step=10, stop_error=1e-5):
+    def inference_step(self, X, iterations, af="sync_tanh",
+                       stop_step=10, stop_error=1e-5):
         self.af_dict = activation_functions.dictionary
         X = X.astype("float")
         # print(self.af_dict)
