@@ -108,7 +108,7 @@ class Dataset_Demyan(MyBaseDataset):
             uti.show_letter(self.X[i], axs[i])
 
 class Dataset_whitenoise(MyBaseDataset):
-    def __init__(self, alphabet_len, side_len = 6):
+    def __init__(self, alphabet_len, image_pixels = 36):
         self.X = np.random.randint(0, 2, 
-                                        size=(alphabet_len, side_len * side_len), 
+                                        size=(alphabet_len, image_pixels), 
                                         dtype='int') * 2 - 1

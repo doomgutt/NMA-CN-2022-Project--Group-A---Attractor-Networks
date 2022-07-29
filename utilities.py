@@ -7,8 +7,10 @@ def show_letter(pattern, ax = None):
     if ax == None:
         f, ax = plt.subplots(1, 1, figsize=(4, 4))
         f.tight_layout()
-    side_len = int( pattern.size ** 0.5 + 0.5)
-    ax.imshow(pattern.reshape(side_len, side_len), cmap='bone_r')
+    side_len = int( (pattern.size-1) ** 0.5 + 0.5 ) + 1
+    pattern_new = np.ones(side_len * side_len) * -1
+    pattern_new[:pattern.shape[0]] = pattern[:]
+    ax.imshow(pattern_new.reshape(side_len, side_len), cmap='bone_r')
     ax.set_axis_off()
 
 def add_noise(x_, noise_level=.2):
