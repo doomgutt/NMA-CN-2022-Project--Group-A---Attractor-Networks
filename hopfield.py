@@ -9,7 +9,7 @@ class HopfieldNetwork(object):
         pass
 
     def run(self, dataset, iterations, 
-            lr='hebbian', af='sync_tanh',
+            lr='hebbian', af='sync_tanh', af_gradient = 1, af_threshold = 0, 
             pe_fn = "pe_lin", se_fn = 'se_lin',
             n_test_samples=100, noise_level=.0,
             need_plot = False):
@@ -25,7 +25,11 @@ class HopfieldNetwork(object):
             x_test = dataset[idx].copy()
             x_test = uti.add_noise(x_test, noise_level=noise_level)
 
-            Xs = self.inference_step(x_test, iterations, af)
+            Xs = None
+            if af == 'sync_tanh' or 'async_tanh':
+                Xs = self.inference_step_tanh(x_test, iterations, af, af_gradient, af_threshold)
+            else:
+                Xs = self.inference_step(x_test, iterations, af)
 
             is_correct, error = self._validate(Xs[-1], idx)
             pm.add(is_correct, error, self.time(), 
@@ -52,8 +56,23 @@ class HopfieldNetwork(object):
 
     # Inference Step
     # --------------
-    def inference_step(self, X, iterations, af="sync_tanh", step_check=10):
+    def inference_step_tanh(self, X, iterations, af, af_gradient, af_threshold, step_check=10):
         self.af_dict = activation_functions.dictionary
+        X = X.astype("float")
+        # print(self.af_dict)
+        Xs = np.zeros((iterations, len(X)))
+        for i in range(iterations):
+            X = self.af_dict[af](X, self.weights, gradient = af_gradient, threshold = af_threshold)
+            if i >= step_check:
+                if self._calculate_error(Xs[i-step_check], X) < 1e-5:
+                    Xs = Xs[:i]
+                    # print(f"quit after {i} steps: steady state reached")
+                    break
+            Xs[i] = X.copy()
+        self.inference_history = Xs
+        return Xs
+     
+    def inference_step(self, X, iterations, af="sync_tanh", step_check=10):
         X = X.astype("float")
         # print(self.af_dict)
         Xs = np.zeros((iterations, len(X)))
@@ -67,8 +86,6 @@ class HopfieldNetwork(object):
             Xs[i] = X.copy()
         self.inference_history = Xs
         return Xs
-     
-
     ## Evaluation functions
     # ---------------------
 
